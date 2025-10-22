@@ -1,3 +1,5 @@
+# python portfolio_report.py positions.csv fx.csv
+
 """
 Factor Neutral Global Equities Portfolio risk report generator
 Generates a daily risk report before market open
@@ -76,7 +78,7 @@ def clean_data(portfolio, fx_rates):
     # Calculate days to unwind (assuming we can trade 10% of daily volume)
     portfolio['days_to_unwind'] = (portfolio['posn_shares'].abs() / 
                                     (portfolio['avg_daily_volume'] * 0.10))
-    
+
     return portfolio, total_gmv
 
 
@@ -84,14 +86,14 @@ def generate_report_header():
     """Generate report header with timestamp"""
     now = datetime.now()
     header = f"""
-            {'='*80}
-            FACTOR NEUTRAL GLOBAL EQUITIES PORTFOLIO - DAILY RISK REPORT
-            {'='*80}
-            Report Generated: {now.strftime('%Y-%m-%d %H:%M:%S')}
-            Report Date: {now.strftime('%A, %B %d, %Y')}
-            {'='*80}
+{'='*80}
+FACTOR NEUTRAL GLOBAL EQUITIES PORTFOLIO - DAILY RISK REPORT
+{'='*80}
+Report Generated: {now.strftime('%Y-%m-%d %H:%M:%S')}
+Report Date: {now.strftime('%A, %B %d, %Y')}
+{'='*80}
 
-            """
+"""
     return header
 
 
@@ -102,24 +104,35 @@ def portfolio_summary_section(portfolio, total_gmv):
     short_value = portfolio[portfolio['position_value_usd'] < 0]['position_value_usd'].sum()
     net_value = portfolio['position_value_usd'].sum()
     total_pnl = portfolio['unrealized_pnl_usd'].sum()
+
+    market_shock = 0.02
+    portfolio['shock_pnl'] = (portfolio['beta'] * market_shock * portfolio['position_value_usd'])
+    simulated_loss = portfolio['shock_pnl'].sum()
+    simulated_loss_pct = portfolio['shock_pnl'].sum() / total_gmv
+
     
     section = f"""
-            PORTFOLIO SUMMARY
-            {'-'*80}
-            Total Gross Market Value (GMV):        ${total_gmv:,.2f}
-            Total Long Exposure:                   ${long_value:,.2f}
-            Total Short Exposure:                  ${short_value:,.2f}
-            Net Market Exposure:                   ${net_value:,.2f}
-            Net Exposure / GMV:                    {(net_value/total_gmv)*100:.2f}%
+PORTFOLIO SUMMARY
+{'-'*80}
+Number of Long Positions:              {len(portfolio[portfolio['side'] == 'LONG'])}
+Number of Short Positions:             {len(portfolio[portfolio['side'] == 'SHORT'])}
+Total Positions:                       {len(portfolio)}
 
-            Total Unrealized P&L:                  ${total_pnl:,.2f}
-            P&L / GMV:                             {(total_pnl/total_gmv)*100:.2f}%
+Total Gross Market Value (GMV):        ${total_gmv:,.2f}
+Total Long Exposure:                   ${long_value:,.2f}
+Total Short Exposure:                  ${short_value:,.2f}
+Net Market Exposure:                   ${net_value:,.2f}
+Net Exposure / GMV:                    {(net_value/total_gmv)*100:.2f}%
 
-            Number of Long Positions:              {len(portfolio[portfolio['side'] == 'LONG'])}
-            Number of Short Positions:             {len(portfolio[portfolio['side'] == 'SHORT'])}
-            Total Positions:                       {len(portfolio)}
+Total Unrealized P&L:                  ${total_pnl:,.2f}
+P&L / GMV:                             {(total_pnl/total_gmv)*100:.2f}%
 
-            """
+MARKET SHOCK SENSITIVITY
+{'-'*80}
+Simulated P&L under 2% market shock
+Net Gain/Loss: {simulated_loss:.6%}")
+Net Gain/Loss as % of GMV: {simulated_loss_pct:.6%}")
+"""
     return section
 
 
@@ -134,17 +147,12 @@ def factor_exposures_section(portfolio, total_gmv):
                   portfolio[portfolio['side'] == 'SHORT']['position_value_usd']).sum() / total_gmv
     
     section = f"""
-            FACTOR EXPOSURES
-            {'-'*80}
-            Portfolio Beta (Dollar-Weighted):      {weighted_beta:.4f}
-            Long Book Beta:                      {long_beta:.4f}
-            Short Book Beta:                     {short_beta:.4f}
-            Beta Imbalance:                      {long_beta + short_beta:.4f}
-
-            ⚠️  WARNING: Factor neutral portfolios should have beta ~0
-                Current beta of {weighted_beta:.4f} indicates {'LONG' if weighted_beta > 0 else 'SHORT'} market bias
-
-            """
+FACTOR EXPOSURES
+{'-'*80}
+Portfolio Beta:                      {weighted_beta:.4f}
+Long Book Beta:                      {long_beta:.4f}
+Short Book Beta:                     {short_beta:.4f}
+"""
     return section
 
 
@@ -185,22 +193,22 @@ def concentration_analysis_section(portfolio):
     currency_exposure = currency_exposure.sort_values('Pct_of_GMV', ascending=False, key=np.abs)
     
     section = f"""
-            CONCENTRATION ANALYSIS
-            {'-'*80}
+CONCENTRATION ANALYSIS
+{'-'*80}
 
-            TOP 10 POSITIONS BY SIZE:
-            {top_positions.to_string(index=False)}
+TOP 10 POSITIONS BY SIZE:
+{top_positions.to_string(index=False)}
 
-            SECTOR EXPOSURE:
-            {sector_exposure.to_string()}
+SECTOR EXPOSURE:
+{sector_exposure.to_string()}
 
-            COUNTRY EXPOSURE:
-            {country_exposure.to_string()}
+COUNTRY EXPOSURE:
+{country_exposure.to_string()}
 
-            CURRENCY EXPOSURE:
-            {currency_exposure.to_string()}
+CURRENCY EXPOSURE:
+{currency_exposure.to_string()}
 
-            """
+"""
     return section
 
 
@@ -219,15 +227,15 @@ def liquidity_analysis_section(portfolio):
     max_days = portfolio['days_to_unwind'].max()
     
     section = f"""
-            LIQUIDITY ANALYSIS
-            {'-'*80}
-            Average Days to Unwind:                {avg_days:.2f} days
-            Median Days to Unwind:                 {median_days:.2f} days
-            Maximum Days to Unwind:                {max_days:.2f} days
+LIQUIDITY ANALYSIS
+{'-'*80}
+Average Days to Unwind:                {avg_days:.2f} days
+Median Days to Unwind:                 {median_days:.2f} days
+Maximum Days to Unwind:                {max_days:.2f} days
 
-            Number of Illiquid Positions (>5d):    {len(illiquid_positions)}
+Number of Illiquid Positions (>5d):    {len(illiquid_positions)}
 
-            """
+"""
     
     if len(illiquid_positions) > 0:
         section += f"""⚠️  ILLIQUID POSITIONS REQUIRING ATTENTION:
@@ -259,23 +267,23 @@ def risk_analysis_section(portfolio, total_gmv):
     ]
     
     section = f"""
-            RISK ANALYSIS
-            {'-'*80}
+RISK ANALYSIS
+{'-'*80}
 
-            MARKET SHOCK SCENARIO (2% Market Move):
-            Expected P&L Impact:                   ${simulated_pnl:,.2f}
-            Impact as % of GMV:                    {simulated_pnl_pct:.4f}%
+MARKET SHOCK SCENARIO (2% Market Move):
+Expected P&L Impact:                   ${simulated_pnl:,.2f}
+Impact as % of GMV:                    {simulated_pnl_pct:.4f}%
 
-            ⚠️  Note: For a truly factor neutral portfolio, this should be ~0%
-                Current exposure suggests portfolio will {'GAIN' if simulated_pnl > 0 else 'LOSE'} in market rally
+⚠️  Note: For a truly factor neutral portfolio, this should be ~0%
+    Current exposure suggests portfolio will {'GAIN' if simulated_pnl > 0 else 'LOSE'} in market rally
 
-            POSITIONS MOST AT RISK IN MARKET SHOCK:
-            {worst_in_shock.to_string(index=False)}
+POSITIONS MOST AT RISK IN MARKET SHOCK:
+{worst_in_shock.to_string(index=False)}
 
-            HIGH BETA POSITIONS (|Beta| > 2.0):
-            Number of High Beta Positions:         {len(high_beta)}
+HIGH BETA POSITIONS (|Beta| > 2.0):
+Number of High Beta Positions:         {len(high_beta)}
 
-            """
+"""
     
     if len(high_beta) > 0:
         section += f"{high_beta.head(10).to_string(index=False)}"
@@ -323,9 +331,9 @@ def unintended_exposures_section(portfolio, total_gmv):
         warnings.append(f"⚠️  {len(large_illiquid)} large positions require >10 days to unwind")
     
     section = f"""
-            UNINTENDED EXPOSURE WARNINGS
-            {'-'*80}
-            """
+UNINTENDED EXPOSURE WARNINGS
+{'-'*80}
+"""
     
     if warnings:
         for warning in warnings:
@@ -341,18 +349,18 @@ def unintended_exposures_section(portfolio, total_gmv):
 def generate_footer():
     """Generate report footer"""
     footer = f"""
-            {'='*80}
-            END OF REPORT
+{'='*80}
+END OF REPORT
 
-            IMPORTANT NOTES:
-            - This report should be reviewed daily before market open
-            - Factor neutral portfolios should maintain beta ~0 and net exposure ~0
-            - Review all flagged warnings and consider rebalancing if necessary
-            - Contact Risk Management for questions or concerns
+IMPORTANT NOTES:
+- This report should be reviewed daily before market open
+- Factor neutral portfolios should maintain beta ~0 and net exposure ~0
+- Review all flagged warnings and consider rebalancing if necessary
+- Contact Risk Management for questions or concerns
 
-            Report Generation: Automated via portfolio_report.py
-            {'='*80}
-            """
+Report Generation: Automated via portfolio_report.py
+{'='*80}
+"""
     return footer
 
 
