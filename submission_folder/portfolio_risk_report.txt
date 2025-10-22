@@ -1,0 +1,174 @@
+
+            ================================================================================
+            FACTOR NEUTRAL GLOBAL EQUITIES PORTFOLIO - DAILY RISK REPORT
+            ================================================================================
+            Report Generated: 2025-10-22 00:08:21
+            Report Date: Wednesday, October 22, 2025
+            ================================================================================
+
+            
+            PORTFOLIO SUMMARY
+            --------------------------------------------------------------------------------
+            Total Gross Market Value (GMV):        $3,309,227,079.64
+            Total Long Exposure:                   $1,619,725,511.73
+            Total Short Exposure:                  $-1,689,501,567.91
+            Net Market Exposure:                   $-69,776,056.18
+            Net Exposure / GMV:                    -2.11%
+
+            Total Unrealized P&L:                  $29,594,257.00
+            P&L / GMV:                             0.89%
+
+            Number of Long Positions:              1468
+            Number of Short Positions:             1532
+            Total Positions:                       3000
+
+            
+            FACTOR EXPOSURES
+            --------------------------------------------------------------------------------
+            Portfolio Beta (Dollar-Weighted):      -0.0340
+            Long Book Beta:                      0.5975
+            Short Book Beta:                     -0.6315
+            Beta Imbalance:                      -0.0340
+
+            ⚠️  WARNING: Factor neutral portfolios should have beta ~0
+                Current beta of -0.0340 indicates SHORT market bias
+
+            
+            CONCENTRATION ANALYSIS
+            --------------------------------------------------------------------------------
+
+            TOP 10 POSITIONS BY SIZE:
+            ticker        name country           sector  position_value_usd  dollar_weight  side
+   ZXT equity_2970     JPN      Health Care       -1.964231e+07       0.005936 SHORT
+   ZYD equity_2709     BRA      Health Care       -1.862032e+07       0.005627 SHORT
+   GVP equity_1975     GBR Consumer Staples        1.525115e+07       0.004609  LONG
+   TNX equity_1186     FIN Consumer Staples        1.414554e+07       0.004275  LONG
+   PJZ  equity_658     GBR      Health Care        1.388518e+07       0.004196  LONG
+   VSU equity_2756     BEL      Health Care       -1.353217e+07       0.004089 SHORT
+   DFB equity_2930     BRA      Health Care        1.296757e+07       0.003919  LONG
+   YWC equity_1220     GRC Consumer Staples       -1.196331e+07       0.003615 SHORT
+   PRU equity_1631     ESP      Health Care        1.184844e+07       0.003580  LONG
+   AOG equity_2610     USA      Health Care       -1.164682e+07       0.003519 SHORT
+
+            SECTOR EXPOSURE:
+                                        Net_Exposure_USD  Gross_Exposure_USD  Unrealized_PnL  Pct_of_GMV
+sector                                                                                      
+Financials                       -1802248.72        7.715557e+08      7757474.79        0.23
+Consumer Discretionary          -18209101.43        6.779567e+08      2368733.80        0.20
+Consumer Staples                  6499566.27        4.346532e+08      3243599.54        0.13
+Industrials                      10444643.31        3.536770e+08      3612988.60        0.11
+Health Care                     -54646538.45        3.425232e+08      5776577.96        0.10
+Information Technology           13256454.22        2.879550e+08      2217443.25        0.09
+Energy                          -20935901.16        1.872072e+08      2359456.07        0.06
+Utilities                        -6486549.93        1.348858e+08      1133742.63        0.04
+Materials                        -4399032.81        7.867577e+07       500987.92        0.02
+Telecommunication Services        6502652.53        4.013743e+07       623252.45        0.01
+
+            COUNTRY EXPOSURE:
+                     Net_Exposure_USD  Gross_Exposure_USD  Unrealized_PnL  Pct_of_GMV
+country                                                                  
+USA          -19018460.59        3.121279e+08      4702002.95    0.094320
+HKG          -17505448.27        3.117998e+08      1680177.26    0.094221
+GBR           30139526.55        2.996220e+08      2900226.41    0.090541
+DEU           17914626.77        2.777431e+08      2384162.50    0.083930
+JPN          -65254674.51        2.114710e+08      1052260.77    0.063903
+BRA          -23419786.00        1.735901e+08      3182502.18    0.052456
+FIN           39675092.97        1.733787e+08      1996948.79    0.052393
+FRA          -23360823.98        1.600517e+08      2615577.62    0.048365
+AUS            4512386.96        1.582094e+08       738046.19    0.047809
+NLD            3344235.16        1.551633e+08      3174082.09    0.046888
+ITA            -943580.44        1.502658e+08      -241706.38    0.045408
+ESP            7767531.08        1.462741e+08      2509643.51    0.044202
+CHE            2993498.11        1.410241e+08       569784.21    0.042615
+RUS           15274880.79        1.354153e+08      -202701.35    0.040921
+GRC          -13786367.61        1.277606e+08      1946377.33    0.038607
+CHN          -11275985.01        1.272463e+08       819875.32    0.038452
+BEL          -18117885.32        1.267205e+08     -1039823.14    0.038293
+CAN            1285177.17        1.213635e+08       806820.74    0.036674
+
+            CURRENCY EXPOSURE:
+                      Net_Exposure_USD  Gross_Exposure_USD  Unrealized_PnL  Pct_of_GMV
+currency                                                                  
+EUR           -31528056.57        1.178695e+09     12147808.46    0.356184
+USD            50753750.10        5.521478e+08      5559613.23    0.166851
+CNY           -24285432.17        3.043468e+08      1616528.97    0.091969
+CAD             4531442.71        2.830572e+08      2277548.58    0.085536
+JPY           -65254674.51        2.114710e+08      1052260.77    0.063903
+BRL           -23419786.00        1.735901e+08      3182502.18    0.052456
+GBP            16416816.30        1.719861e+08      1566640.80    0.051972
+AUD             4512386.96        1.582094e+08       738046.19    0.047809
+CHF             2993498.11        1.410241e+08       569784.21    0.042615
+HKD            -4496001.12        1.346992e+08       883523.61    0.040704
+
+            
+            LIQUIDITY ANALYSIS
+            --------------------------------------------------------------------------------
+            Average Days to Unwind:                inf days
+            Median Days to Unwind:                 0.62 days
+            Maximum Days to Unwind:                inf days
+
+            Number of Illiquid Positions (>5d):    792
+
+            ⚠️  ILLIQUID POSITIONS REQUIRING ATTENTION:
+                ticker        name country  posn_shares  avg_daily_volume  days_to_unwind  position_value_usd
+   SLH equity_2667     AUS           -1                 0             inf       -4.755559e+01
+   YOR equity_2749     GBR         -177                59       30.000000       -2.580052e+04
+   HLE equity_1468     CAN           69                23       30.000000        1.079616e+04
+   QUW equity_2358     HKG       -29380              9825       29.903308       -1.863287e+05
+   BXN equity_1358     NLD       142940             47801       29.903140        2.933790e+06
+   TOC  equity_358     ESP       -10801              3612       29.903101       -1.060817e+06
+   NOW equity_1749     AUS         4874              1633       29.846908        7.710722e+05
+   DXT  equity_749     GBR        -3029              1015       29.842365       -5.998026e+05
+   EGI equity_2468     BRA          536               180       29.777778        4.183232e+04
+   MUR  equity_468     RUS        -1657               557       29.748654       -1.760562e+05
+
+                
+            RISK ANALYSIS
+            --------------------------------------------------------------------------------
+
+            MARKET SHOCK SCENARIO (2% Market Move):
+            Expected P&L Impact:                   $-2,250,901.17
+            Impact as % of GMV:                    -0.0680%
+
+            ⚠️  Note: For a truly factor neutral portfolio, this should be ~0%
+                Current exposure suggests portfolio will LOSE in market rally
+
+            POSITIONS MOST AT RISK IN MARKET SHOCK:
+            ticker        name     beta  position_value_usd      shock_pnl  side
+   LCO equity_2452 4.068492       -6.510900e+06 -529790.867747 SHORT
+   VSU equity_2756 1.892090       -1.353217e+07 -512081.561679 SHORT
+   RHS equity_2818 3.280343       -6.271666e+06 -411464.391449 SHORT
+   HEW equity_1403 3.519518       -5.642120e+06 -397150.897788 SHORT
+   AOG equity_2610 1.574179       -1.164682e+07 -366683.576042 SHORT
+
+            HIGH BETA POSITIONS (|Beta| > 2.0):
+            Number of High Beta Positions:         368
+
+            ticker        name     beta  position_value_usd  dollar_weight  side
+   BUX    equity_8 7.205475        3.043469e+05       0.000092  LONG
+   ZLG  equity_431 5.310044        7.940954e+04       0.000024  LONG
+   JIG  equity_888 5.229256        2.200287e+04       0.000007  LONG
+   AMW equity_2580 5.173441        1.112926e+06       0.000336  LONG
+   JPQ equity_1143 5.147045       -2.713018e+06       0.000820 SHORT
+   ENI equity_2735 4.781361        1.103066e+05       0.000033  LONG
+   ZRF equity_2571 4.648731       -5.120665e+05       0.000155 SHORT
+   CLM  equity_705 4.601966        2.330760e+05       0.000070  LONG
+   UHY  equity_848 4.584392        1.144593e+04       0.000003  LONG
+   VXS  equity_423 4.439190       -1.373947e+06       0.000415 SHORT
+            UNINTENDED EXPOSURE WARNINGS
+            --------------------------------------------------------------------------------
+            ✓ No significant unintended exposures detected
+
+
+            ================================================================================
+            END OF REPORT
+
+            IMPORTANT NOTES:
+            - This report should be reviewed daily before market open
+            - Factor neutral portfolios should maintain beta ~0 and net exposure ~0
+            - Review all flagged warnings and consider rebalancing if necessary
+            - Contact Risk Management for questions or concerns
+
+            Report Generation: Automated via portfolio_report.py
+            ================================================================================
+            
