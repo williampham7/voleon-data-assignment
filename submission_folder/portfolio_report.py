@@ -1,4 +1,4 @@
-# python portfolio_report.py positions.csv fx.csv
+# python3.12 portfolio_report.py positions.csv fx.csv
 
 """
 Factor Neutral Global Equities Portfolio risk report generator
@@ -16,7 +16,6 @@ import pandas as pd
 import numpy as np
 import sys
 from datetime import datetime
-
 
 def load_data(positions_file, fx_file):
     """Load portfolio positions and FX rates"""
@@ -56,16 +55,16 @@ def clean_data(portfolio, fx_rates):
         if row['country'] in currency_map:
             portfolio.at[idx, 'currency'] = currency_map[row['country']]
     
-    # Re-merge FX rates for filled currencies
+    # merge FX rates for filled currencies
     portfolio = portfolio.drop(columns=['to_USD'], errors='ignore')
     portfolio = portfolio.merge(fx_rates, on='currency', how='left')
     
-    # Calculate position values
+    # calculate position values
     portfolio['position_value_local'] = portfolio['posn_shares'] * portfolio['market_price_local']
     portfolio['cost_value_local'] = portfolio['posn_shares'] * portfolio['cost_basis_local']
     portfolio['unrealized_pnl_local'] = portfolio['position_value_local'] - portfolio['cost_value_local']
     
-    # Convert to USD
+    # convert to USD
     portfolio['position_value_usd'] = portfolio['position_value_local'] * portfolio['to_USD']
     portfolio['cost_value_usd'] = portfolio['cost_value_local'] * portfolio['to_USD']
     portfolio['unrealized_pnl_usd'] = portfolio['unrealized_pnl_local'] * portfolio['to_USD']
@@ -75,7 +74,7 @@ def clean_data(portfolio, fx_rates):
     portfolio['position_weight'] = portfolio['position_value_usd'] / total_gmv
     portfolio['dollar_weight'] = portfolio['position_value_usd'].abs() / total_gmv
     
-    # Calculate days to unwind (assuming we can trade 10% of daily volume)
+    # Calculate days to unwind (we assume max 10% daily value can be traded per day)
     portfolio['days_to_unwind'] = (portfolio['posn_shares'].abs() / 
                                     (portfolio['avg_daily_volume'] * 0.10))
 
@@ -86,12 +85,9 @@ def generate_report_header():
     """Generate report header with timestamp"""
     now = datetime.now()
     header = f"""
-{'='*80}
 FACTOR NEUTRAL GLOBAL EQUITIES PORTFOLIO - DAILY RISK REPORT
 {'='*80}
 Report Generated: {now.strftime('%Y-%m-%d %H:%M:%S')}
-Report Date: {now.strftime('%A, %B %d, %Y')}
-{'='*80}
 
 """
     return header
@@ -110,13 +106,20 @@ def portfolio_summary_section(portfolio, total_gmv):
     simulated_loss = portfolio['shock_pnl'].sum()
     simulated_loss_pct = portfolio['shock_pnl'].sum() / total_gmv
 
+    weighted_beta = (portfolio['beta'] * portfolio['position_value_usd']).sum() / total_gmv
+    long_beta = (portfolio[portfolio['side'] == 'LONG']['beta'] * 
+                 portfolio[portfolio['side'] == 'LONG']['position_value_usd']).sum() / total_gmv
+    short_beta = (portfolio[portfolio['side'] == 'SHORT']['beta'] * 
+                  portfolio[portfolio['side'] == 'SHORT']['position_value_usd']).sum() / total_gmv
+
     
     section = f"""
 PORTFOLIO SUMMARY
 {'-'*80}
-Number of Long Positions:              {len(portfolio[portfolio['side'] == 'LONG'])}
-Number of Short Positions:             {len(portfolio[portfolio['side'] == 'SHORT'])}
 Total Positions:                       {len(portfolio)}
+Long Positions:                        {len(portfolio[portfolio['side'] == 'LONG'])}
+Short Positions:                       {len(portfolio[portfolio['side'] == 'SHORT'])}
+Long/Short Ratio:                      {len(portfolio[portfolio['side'] == 'LONG']) / max(len(portfolio[portfolio['side'] == 'SHORT']), 1):.2f}
 
 Total Gross Market Value (GMV):        ${total_gmv:,.2f}
 Total Long Exposure:                   ${long_value:,.2f}
@@ -127,31 +130,17 @@ Net Exposure / GMV:                    {(net_value/total_gmv)*100:.2f}%
 Total Unrealized P&L:                  ${total_pnl:,.2f}
 P&L / GMV:                             {(total_pnl/total_gmv)*100:.2f}%
 
-MARKET SHOCK SENSITIVITY
-{'-'*80}
-Simulated P&L under 2% market shock
-Net Gain/Loss: {simulated_loss:.6%}")
-Net Gain/Loss as % of GMV: {simulated_loss_pct:.6%}")
-"""
-    return section
-
-
-def factor_exposures_section(portfolio, total_gmv):
-    """Analyze factor exposures - key for factor neutral strategy"""
-    
-    # Beta exposure
-    weighted_beta = (portfolio['beta'] * portfolio['position_value_usd']).sum() / total_gmv
-    long_beta = (portfolio[portfolio['side'] == 'LONG']['beta'] * 
-                 portfolio[portfolio['side'] == 'LONG']['position_value_usd']).sum() / total_gmv
-    short_beta = (portfolio[portfolio['side'] == 'SHORT']['beta'] * 
-                  portfolio[portfolio['side'] == 'SHORT']['position_value_usd']).sum() / total_gmv
-    
-    section = f"""
 FACTOR EXPOSURES
 {'-'*80}
-Portfolio Beta:                      {weighted_beta:.4f}
-Long Book Beta:                      {long_beta:.4f}
-Short Book Beta:                     {short_beta:.4f}
+Portfolio Beta:                        {weighted_beta:.4f}
+Long Book Beta:                        {long_beta:.4f}
+Short Book Beta:                       {short_beta:.4f}
+
+MARKET SHOCK SENSITIVITY ANALYSIS
+{'-'*80}
+MARKET SHOCK SCENARIO (2% Market Move):
+Expected P&L Impact:                   ${simulated_loss:,.2f}
+Impact as % of GMV:                    {simulated_loss_pct:.4%}
 """
     return section
 
@@ -173,6 +162,8 @@ def concentration_analysis_section(portfolio):
     )
     sector_exposure['Pct_of_GMV'] = sector_exposure['Gross_Exposure_USD'] / gmv
     sector_exposure = sector_exposure.round(2).sort_values('Pct_of_GMV', ascending=False, key=np.abs)
+    # Reset index so the label (sector) prints as a normal column header in to_string
+    sector_exposure_print = sector_exposure.reset_index()
 
     # Country concentrations
     country_exposure = portfolio.groupby('country').agg(
@@ -182,6 +173,8 @@ def concentration_analysis_section(portfolio):
     ).round(2)
     country_exposure['Pct_of_GMV'] = country_exposure['Gross_Exposure_USD'] / gmv
     country_exposure = country_exposure.sort_values('Pct_of_GMV', ascending=False, key=np.abs)
+    # Reset index so the label (country) prints inline with headers
+    country_exposure_print = country_exposure.reset_index()
     
     # Currency exposures
     currency_exposure = portfolio.groupby('currency').agg(
@@ -191,22 +184,23 @@ def concentration_analysis_section(portfolio):
     ).round(2)
     currency_exposure['Pct_of_GMV'] = currency_exposure['Gross_Exposure_USD'] / gmv
     currency_exposure = currency_exposure.sort_values('Pct_of_GMV', ascending=False, key=np.abs)
+    currency_exposure_print = currency_exposure.reset_index()
     
     section = f"""
 CONCENTRATION ANALYSIS
 {'-'*80}
 
-TOP 10 POSITIONS BY SIZE:
-{top_positions.to_string(index=False)}
-
 SECTOR EXPOSURE:
-{sector_exposure.to_string()}
+{sector_exposure_print.to_string(index=False)}
 
 COUNTRY EXPOSURE:
-{country_exposure.to_string()}
+{country_exposure_print.to_string(index=False)}
 
 CURRENCY EXPOSURE:
-{currency_exposure.to_string()}
+{currency_exposure_print.to_string(index=False)}
+
+TOP 10 POSITIONS BY SIZE:
+{top_positions.to_string(index=False)}
 
 """
     return section
@@ -229,67 +223,20 @@ def liquidity_analysis_section(portfolio):
     section = f"""
 LIQUIDITY ANALYSIS
 {'-'*80}
-Average Days to Unwind:                {avg_days:.2f} days
-Median Days to Unwind:                 {median_days:.2f} days
-Maximum Days to Unwind:                {max_days:.2f} days
+Assuming that 10% of average daily volume can be traded per day:
 
+Median Days to Unwind:                 {median_days:.2f} days
 Number of Illiquid Positions (>5d):    {len(illiquid_positions)}
 
 """
     
     if len(illiquid_positions) > 0:
-        section += f"""⚠️  ILLIQUID POSITIONS REQUIRING ATTENTION:
-                {illiquid_positions.head(10).to_string(index=False)}
-
-                """
-    
-    return section
-
-
-def risk_analysis_section(portfolio, total_gmv):
-    """Perform risk analysis including market shock scenarios"""
-    
-    # Simulate 2% market shock
-    market_shock = 0.02
-    portfolio['shock_pnl'] = portfolio['beta'] * market_shock * portfolio['position_value_usd']
-    
-    simulated_pnl = portfolio['shock_pnl'].sum()
-    simulated_pnl_pct = (simulated_pnl / total_gmv) * 100
-    
-    # Find positions most at risk
-    worst_in_shock = portfolio.nsmallest(5, 'shock_pnl')[
-        ['ticker', 'name', 'beta', 'position_value_usd', 'shock_pnl', 'side']
-    ]
-    
-    # High beta positions
-    high_beta = portfolio[portfolio['beta'].abs() > 2.0].sort_values('beta', ascending=False)[
-        ['ticker', 'name', 'beta', 'position_value_usd', 'dollar_weight', 'side']
-    ]
-    
-    section = f"""
-RISK ANALYSIS
-{'-'*80}
-
-MARKET SHOCK SCENARIO (2% Market Move):
-Expected P&L Impact:                   ${simulated_pnl:,.2f}
-Impact as % of GMV:                    {simulated_pnl_pct:.4f}%
-
-⚠️  Note: For a truly factor neutral portfolio, this should be ~0%
-    Current exposure suggests portfolio will {'GAIN' if simulated_pnl > 0 else 'LOSE'} in market rally
-
-POSITIONS MOST AT RISK IN MARKET SHOCK:
-{worst_in_shock.to_string(index=False)}
-
-HIGH BETA POSITIONS (|Beta| > 2.0):
-Number of High Beta Positions:         {len(high_beta)}
-
+        section += f"""
+MOST ILLIQUID POSITIONS:
+{illiquid_positions.head(10).to_string(index=False)}
 """
     
-    if len(high_beta) > 0:
-        section += f"{high_beta.head(10).to_string(index=False)}"
-    
     return section
-
 
 def unintended_exposures_section(portfolio, total_gmv):
     """Flag potential unintended exposures"""
@@ -310,26 +257,32 @@ def unintended_exposures_section(portfolio, total_gmv):
     sector_exposure = portfolio.groupby('sector')['position_value_usd'].sum().abs() / total_gmv
     max_sector = sector_exposure.max()
     if max_sector > 0.3:
-        warnings.append(f"⚠️  Sector concentration ({max_sector:.2%}) in {sector_exposure.idxmax()}")
+        warnings.append(f"Sector concentration ({max_sector:.2%}) in {sector_exposure.idxmax()}")
     
     # Check country concentrations
     country_exposure = portfolio.groupby('country')['position_value_usd'].sum().abs() / total_gmv
     max_country = country_exposure.max()
-    if max_country > 0.4:
-        warnings.append(f"⚠️  Country concentration ({max_country:.2%}) in {country_exposure.idxmax()}")
-    
+    if max_country > 0.3:
+        warnings.append(f"Country concentration ({max_country:.2%}) in {country_exposure.idxmax()}")
+
+    # Check currency concentrations
+    currency_exposure = portfolio.groupby('currency')['position_value_usd'].agg(lambda x: x.abs().sum()) / total_gmv
+    max_currency = currency_exposure.max()
+    if max_currency > 0.3:
+        warnings.append(f"High Currency concentration ({max_currency:.2%}) in {currency_exposure.idxmax()}")
+
     # Check single name concentrations
     max_single = portfolio['dollar_weight'].max()
     if max_single > 0.05:
         ticker = portfolio.loc[portfolio['dollar_weight'].idxmax(), 'ticker']
-        warnings.append(f"⚠️  Single name concentration ({max_single:.2%}) in {ticker}")
+        warnings.append(f"Single name concentration ({max_single:.2%}) in {ticker}")
     
     # Check for illiquid large positions
-    large_illiquid = portfolio[(portfolio['days_to_unwind'] > 10) & 
-                               (portfolio['dollar_weight'] > 0.02)]
+    large_illiquid = portfolio[(portfolio['days_to_unwind'] > 10)]
     if len(large_illiquid) > 0:
-        warnings.append(f"⚠️  {len(large_illiquid)} large positions require >10 days to unwind")
+        warnings.append(f"{len(large_illiquid)} large positions require >10 days to unwind")
     
+
     section = f"""
 UNINTENDED EXPOSURE WARNINGS
 {'-'*80}
@@ -351,14 +304,6 @@ def generate_footer():
     footer = f"""
 {'='*80}
 END OF REPORT
-
-IMPORTANT NOTES:
-- This report should be reviewed daily before market open
-- Factor neutral portfolios should maintain beta ~0 and net exposure ~0
-- Review all flagged warnings and consider rebalancing if necessary
-- Contact Risk Management for questions or concerns
-
-Report Generation: Automated via portfolio_report.py
 {'='*80}
 """
     return footer
@@ -376,29 +321,21 @@ def main():
     fx_file = sys.argv[2]
     
     try:
-        # Load and process data
-        print("Loading data...")
         portfolio, fx_rates = load_data(positions_file, fx_file)
         
-        print("Processing portfolio...")
         portfolio, total_gmv = clean_data(portfolio, fx_rates)
         
-        # Generate report sections
-        print("Generating report...")
         report = ""
         report += generate_report_header()
+        report += unintended_exposures_section(portfolio, total_gmv)
         report += portfolio_summary_section(portfolio, total_gmv)
-        report += factor_exposures_section(portfolio, total_gmv)
         report += concentration_analysis_section(portfolio)
         report += liquidity_analysis_section(portfolio)
-        report += risk_analysis_section(portfolio, total_gmv)
-        report += unintended_exposures_section(portfolio, total_gmv)
         report += generate_footer()
         
-        # Print to console
         print(report)
         
-        # Save to file
+        # Save to .txt file
         output_file = "portfolio_risk_report.txt"
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(report)
